@@ -1,22 +1,29 @@
 use std::io;
 use std::process::exit;
+use crate::MatchStatus::{Nearly, Right, Wrong};
+use colored::Colorize;
+use r#typeof::type_of;
+
 
 fn main() {
-    println!("Hello, world!");
+
+    let s2 = String::from("hellow");
+    let a = s2.red();
+    println!("{}", type_of(a));
+
+    let mut vec = vec![104, 101, 108, 108, 111, 119];
+
+
+    let str = String::from_utf8(vec).unwrap();
+    println!("{str}");
+
+
+    let answer = String::from("jumps");
 
     let mut rows = Vec::new();
     rows.push(String::from("sdfasdf"));
     rows.push(String::from("slkdwopeir"));
 
-    println_vec(&rows);
-
-
-    let row = rows.get(0).unwrap();
-    println!("{row}");
-
-
-    let compare_result = compare("sdf", "sdf");
-    println!("{:?}", compare_result);
 
 
     let mut round = 0;
@@ -38,6 +45,17 @@ fn main() {
         } else {
             let mut line = String::new();
             io::stdin().read_line(&mut line).unwrap();
+            let mut right_count = 0;
+            // for single_result in compare(&line, &answer) {
+            //     match single_result {
+            //         true => {
+            //             right_count += 1;
+            //
+            //         }
+            //         false => {}
+            //     }
+            // }
+
             round += 1;
         }
     }
@@ -51,20 +69,25 @@ fn println_vec(rows: &Vec<String>) {
     }
 }
 
-
-fn compare(str1: &str, str2: &str) -> Vec<bool> {
-
+fn compare(str1: &str, str2: &str) -> Vec<MatchStatus> {
     let bytes1 = str1.as_bytes();
     let bytes2 = str2.as_bytes();
-
     let mut result = Vec::new();
 
     for idx in 0..bytes1.len() {
         if bytes1[idx] == bytes2[idx] {
-            result.push(true);
+            result.push(Right(String::from("green")));
+        } else if bytes2.contains(&bytes1[idx]){
+            result.push(Nearly(String::from("yellow")));
         } else {
-            result.push(false);
+            result.push(Wrong(String::from("wrong")));
         }
     }
     result
+}
+
+enum MatchStatus {
+    Right(String),
+    Nearly(String),
+    Wrong(String)
 }
