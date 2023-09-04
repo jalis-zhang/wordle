@@ -1,93 +1,121 @@
 use std::io;
 use std::process::exit;
 use crate::MatchStatus::{Nearly, Right, Wrong};
-use colored::Colorize;
-use r#typeof::type_of;
-
+use colored::{ColoredString, Colorize};
 
 fn main() {
-
-    let s2 = String::from("hellow");
-    let a = s2.red();
-    println!("{}", type_of(a));
-
-    let mut vec = vec![104, 101, 108, 108, 111, 119];
-
-
-    let str = String::from_utf8(vec).unwrap();
-    println!("{str}");
-
-
-    let answer = String::from("jumps");
-
-    let mut rows = Vec::new();
-    rows.push(String::from("sdfasdf"));
-    rows.push(String::from("slkdwopeir"));
-
-
-
-    let mut round = 0;
-
+    let answer = String::from("please\n");
+    let mut display_vec: Vec<Vec<ColoredString>> = Vec::new();
     loop {
-
-        if (round == 6) {
-            println!("Do you want to continue the game ? [Y/N]");
-            let mut is_continue = String::new();
-            io::stdin().read_line(&mut is_continue).unwrap();
-
-            if is_continue.eq("Y") {
-                round = 0;
-            } else if is_continue.eq("N") {
-                exit(0);
-            } else {
-                println!("unknown character, please input again. [Y/N]");
+        for round in 0..6 {
+            let round_result = round_game(&answer, &mut display_vec);
+            if round_result {
+                println!("Congratulations, you win!!!");
+                break;
             }
-        } else {
-            let mut line = String::new();
-            io::stdin().read_line(&mut line).unwrap();
-            let mut right_count = 0;
-            // for single_result in compare(&line, &answer) {
-            //     match single_result {
-            //         true => {
-            //             right_count += 1;
-            //
-            //         }
-            //         false => {}
-            //     }
-            // }
-
-            round += 1;
+        }
+        if !new_round() {
+            break;
         }
     }
-
 }
 
-
-fn println_vec(rows: &Vec<String>) {
-    for str in rows {
-        println!("{str}")
+fn new_round() -> bool {
+    let mut str = String::new();
+    println!("Do you wanna play again? [Y/N]");
+    io::stdin().read_line(&mut str).unwrap();
+    if str == "Y\n" {
+        true
+    } else if str == "N\n"{
+        println!("Bye, see you next time");
+        false
+    } else {
+        println!("Unrecognized character, Bye");
+        false
     }
 }
 
-fn compare(str1: &str, str2: &str) -> Vec<MatchStatus> {
-    let bytes1 = str1.as_bytes();
-    let bytes2 = str2.as_bytes();
+fn round_game(answer: &String, display_vec: &mut Vec<Vec<ColoredString>>) -> bool {
+    let mut line = String::new();
+    io::stdin().read_line(&mut line).unwrap();
+    while !check_input(&line) {
+        println!("Input error line, please input again");
+        io::stdin().read_line(&mut line).unwrap();
+    }
+    let (result_vec, is_right) = compare(&line, answer);
+    let string_vec = string_to_vec(line);
+    flush_display_vec(display_vec, result_vec, string_vec);
+    println_vec(display_vec);
+    is_right
+}
+
+fn check_input(input: &String) -> bool{
+
+    true
+}
+
+fn string_to_vec(str: String) -> Vec<String> {
     let mut result = Vec::new();
-
-    for idx in 0..bytes1.len() {
-        if bytes1[idx] == bytes2[idx] {
-            result.push(Right(String::from("green")));
-        } else if bytes2.contains(&bytes1[idx]){
-            result.push(Nearly(String::from("yellow")));
-        } else {
-            result.push(Wrong(String::from("wrong")));
-        }
+    let bytes = str.into_bytes();
+    for byte in bytes {
+        result.push(String::from_utf8(vec![byte]).unwrap());
     }
     result
 }
 
+fn flush_display_vec(display_vec: &mut Vec<Vec<ColoredString>>, compare_result: Vec<MatchStatus>,
+string_vec: Vec<String>) {
+    let mut row: Vec<ColoredString> = Vec::new();
+
+    for idx in 0..compare_result.len() {
+        let str = &string_vec[idx];
+        let result = &compare_result[idx];
+        match result {
+            Right => {
+                row.push(str.green())
+            }
+            Nearly => {
+                row.push(str.yellow())
+            }
+            Wrong => {
+                row.push(str.red())
+            }
+        }
+    }
+    display_vec.push(row)
+}
+
+
+
+fn println_vec(rows: &Vec<Vec<ColoredString>>) {
+    for row in rows {
+        for item in row {
+            print!("{item}")
+        }
+    }
+    println!()
+}
+
+fn compare(str1: &str, str2: &str) -> (Vec<MatchStatus>, bool) {
+    let bytes1 = str1.as_bytes();
+    let bytes2 = str2.as_bytes();
+    let mut result = Vec::new();
+    let mut correct_count = 0;
+    for idx in 0..bytes1.len() {
+        if bytes1[idx] == bytes2[idx] {
+            result.push(Right);
+            correct_count += 1;
+        } else if bytes2.contains(&bytes1[idx]){
+            result.push(Nearly);
+        } else {
+            result.push(Wrong);
+        }
+    }
+    (result, correct_count==7)
+}
+
 enum MatchStatus {
-    Right(String),
-    Nearly(String),
-    Wrong(String)
+    Right,
+    Nearly,
+    Wrong
 }
