@@ -20,6 +20,7 @@ fn main() {
     }
 }
 
+
 fn new_round() -> bool {
     let mut str = String::new();
     println!("Do you wanna play again? [Y/N]");
