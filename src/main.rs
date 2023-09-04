@@ -4,25 +4,32 @@ use crate::MatchStatus::{Nearly, Right, Wrong};
 use colored::{ColoredString, Colorize};
 
 fn main() {
+    println!("Welcome into my wordle game, please enter a word with six letter six times");
+    println!("game starting");
     let answer = String::from("please\n");
     let mut display_vec: Vec<Vec<ColoredString>> = Vec::new();
     loop {
+        let mut round_result = false;
         for round in 0..6 {
-            let round_result = round_game(&answer, &mut display_vec);
+            round_result |= round_game(&answer, &mut display_vec);
             if round_result {
                 println!("Congratulations, you win!!!");
                 break;
             }
         }
+        if !round_result {
+            println!("Sorry, you lose!!!");
+        }
         if !new_round() {
             break;
         }
+        display_vec.clear();
     }
 }
 
 fn new_round() -> bool {
     let mut str = String::new();
-    println!("Do you wanna play again? [Y/N]");
+    println!("Do you wanna try again? [Y/N]");
     io::stdin().read_line(&mut str).unwrap();
     if str == "Y\n" {
         true
@@ -57,8 +64,8 @@ fn check_input(input: &String) -> bool{
 fn string_to_vec(str: String) -> Vec<String> {
     let mut result = Vec::new();
     let bytes = str.into_bytes();
-    for byte in bytes {
-        result.push(String::from_utf8(vec![byte]).unwrap());
+    for idx in 0..bytes.len()-1 {
+        result.push(String::from_utf8(vec![bytes[idx]]).unwrap());
     }
     result
 }
@@ -85,15 +92,13 @@ string_vec: Vec<String>) {
     display_vec.push(row)
 }
 
-
-
 fn println_vec(rows: &Vec<Vec<ColoredString>>) {
     for row in rows {
         for item in row {
-            print!("{item}")
+            print!("{item} ")
         }
+        println!()
     }
-    println!()
 }
 
 fn compare(str1: &str, str2: &str) -> (Vec<MatchStatus>, bool) {
@@ -101,7 +106,7 @@ fn compare(str1: &str, str2: &str) -> (Vec<MatchStatus>, bool) {
     let bytes2 = str2.as_bytes();
     let mut result = Vec::new();
     let mut correct_count = 0;
-    for idx in 0..bytes1.len() {
+    for idx in 0..bytes1.len()-1 {
         if bytes1[idx] == bytes2[idx] {
             result.push(Right);
             correct_count += 1;
@@ -111,7 +116,7 @@ fn compare(str1: &str, str2: &str) -> (Vec<MatchStatus>, bool) {
             result.push(Wrong);
         }
     }
-    (result, correct_count==7)
+    (result, correct_count==6)
 }
 
 enum MatchStatus {
