@@ -1,5 +1,4 @@
 use std::io;
-use std::process::exit;
 use crate::MatchStatus::{Nearly, Right, Wrong};
 use colored::{ColoredString, Colorize};
 
@@ -10,7 +9,7 @@ fn main() {
     let mut display_vec: Vec<Vec<ColoredString>> = Vec::new();
     loop {
         let mut round_result = false;
-        for round in 0..6 {
+        for _round in 0..6 {
             round_result |= round_game(&answer, &mut display_vec);
             if round_result {
                 println!("Congratulations, you win!!!");
@@ -47,6 +46,7 @@ fn round_game(answer: &String, display_vec: &mut Vec<Vec<ColoredString>>) -> boo
     io::stdin().read_line(&mut line).unwrap();
     while !check_input(&line) {
         println!("Input error line, please input again");
+        line.clear();
         io::stdin().read_line(&mut line).unwrap();
     }
     let (result_vec, is_right) = compare(&line, answer);
@@ -57,8 +57,7 @@ fn round_game(answer: &String, display_vec: &mut Vec<Vec<ColoredString>>) -> boo
 }
 
 fn check_input(input: &String) -> bool{
-
-    true
+    input.len() == 7
 }
 
 fn string_to_vec(str: String) -> Vec<String> {
